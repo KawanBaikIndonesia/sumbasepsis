@@ -459,8 +459,8 @@ function parseData(csv) {
     0:'Timestamp',2:'NamaPetugas',4:'DusunArea',
     7:'NamaLengkap',9:'JenisKelamin',11:'Umur',12:'Desa',13:'Dusun',
     21:'Q5_JmlBalita',22:'Q6_Imunisasi',25:'Q9_PenyakitKronis',
-    31:'Q14_Rokok',41:'Q16_AirMinum',43:'Q18_Toilet',44:'Q19_CTPS',
-    45:'Q20_JarakFaskes',49:'Q23_SakitBerat',57:'Q31_AdaKematian',
+    31:'Q14_Rokok',40:'Q16_AirMinum',42:'Q18_Toilet',43:'Q19_CTPS',
+    44:'Q20_JarakFaskes',49:'Q23_SakitBerat',57:'Q31_AdaKematian',
     61:'Q34_LamaSebelumCari',86:'Q55_KepercayaanFaskes'
   };
   return rows.slice(2).filter(r=>r.some(c=>c&&c.trim())).map(row=>{
