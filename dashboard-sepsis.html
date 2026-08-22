@@ -193,7 +193,7 @@ body{background:var(--gray-50);color:var(--gray-900);font-family:var(--font);fon
       </div>
       <div class="hero-stat">
         <div class="hero-stat-val" id="heroDusun">—</div>
-        <div class="hero-stat-label" data-id="Desa & Dusun Tercakup" data-en="Villages & Hamlets Covered">Desa & Dusun Tercakup</div>
+  <div class="hero-stat-label" data-id="Dusun / Desa Tercakup" data-en="Hamlets / Villages Covered">Dusun / Desa Tercakup</div>
       </div>
       <div class="hero-stat">
         <div class="hero-stat-val" id="heroPetugas">—</div>
@@ -537,13 +537,8 @@ function renderStatic(data) {
   const petugasSet = new Set(data.map(r=>r.NamaPetugas).filter(Boolean));
 
   // Hero stats
-  // Tampilkan perpaduan: "41 Dusun (10 Desa)" atau "41 Hamlets (10 Villages)"
-  if (currentLang === 'id') {
-    document.getElementById('heroDusun').textContent = `${dusunSet.size} Dusun (${desaSet.size} Desa)`;
-  } else {
-    document.getElementById('heroDusun').textContent = `${dusunSet.size} Hamlets (${desaSet.size} Villages)`;
-  }
-  
+  // Tampilan ringkas
+  document.getElementById('heroDusun').textContent = `${dusunSet.size} / ${desaSet.size}`;  
   document.getElementById('heroTotal').textContent = total;
   document.getElementById('heroPetugas').textContent = petugasSet.size;
 
@@ -644,10 +639,11 @@ function renderDynamic(data) {
               const dusunData = desaGroup[desaName]?.dusunMap;
               if (!dusunData) return '';
               
+              const headerText = currentLang === 'id' ? 'Rincian Dusun:' : 'Hamlet Breakdown:';
               const list = Object.entries(dusunData)
                 .map(([dusun, count]) => `• ${dusun}: ${count}`)
                 .join('\n');
-              return '\nRincian Dusun:\n' + list;
+              return '\n' + headerText + '\n' + list;
             }
           }
         }
