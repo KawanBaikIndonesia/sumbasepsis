@@ -681,6 +681,7 @@ function renderDynamic(data) {
       borderSkipped: false
     }
   ], {
+    indexAxis: 'y', // <--- Mengubah ke horizontal
     plugins: {
       legend: { display: true, position: 'bottom' },
       tooltip: TOOLTIP
@@ -728,7 +729,9 @@ function renderDynamic(data) {
       borderRadius: 6,
       borderSkipped: false
     }],
-    { plugins: { legend: { display: false }, tooltip: TOOLTIP } }
+    { 
+      indexAxis: 'y', // <--- Mengubah ke horizontal
+      plugins: { legend: { display: false }, tooltip: TOOLTIP } }
   );
 }
 // ── LOAD ──────────────────────────────────────────────────
