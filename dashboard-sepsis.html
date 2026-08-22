@@ -287,8 +287,8 @@ body{background:var(--gray-50);color:var(--gray-900);font-family:var(--font);fon
   <div class="section-label" data-id="Akses Layanan & Kepercayaan" data-en="Healthcare Access & Trust">Akses Layanan & Kepercayaan</div>
   <div class="chart-grid">
     <div class="chart-card">
-      <div class="chart-title" data-id="Jarak ke Fasilitas Kesehatan" data-en="Distance to Health Facility">Jarak ke Fasilitas Kesehatan</div>
-      <div class="chart-sub" data-id="waktu tempuh responden ke faskes terdekat" data-en="travel time to nearest health facility">waktu tempuh responden ke faskes terdekat</div>
+      <div class="chart-title" data-id="Aksesibilitas Fasilitas Kesehatan" data-en="Healthcare Access">Aksesibilitas Fasilitas Kesehatan</div>
+      <div class="chart-sub" data-id="perbandingan waktu tempuh (Q20) dan jarak fisik (Q22) ke faskes terdekat" data-en="comparison of travel time (Q20) and physical distance (Q22) to nearest health facility">perbandingan waktu tempuh (Q20) dan jarak fisik (Q22) ke faskes terdekat</div>
       <div class="chart-wrap"><canvas id="chartFaskes"></canvas></div>
     </div>
     <div class="chart-card">
@@ -462,12 +462,18 @@ function parseData(csv) {
     7:'NamaLengkap',9:'JenisKelamin',11:'Umur',12:'Desa',13:'Dusun',
     21:'Q5_JmlBalita',22:'Q6_Imunisasi',25:'Q9_PenyakitKronis',
     31:'Q14_Rokok',40:'Q16_AirMinum',42:'Q18_Toilet',43:'Q19_CTPS',
-    44:'Q20_JarakFaskes',49:'Q23_SakitBerat',57:'Q31_AdaKematian',
+    44:'Q20_JarakFaskes',48:'Q23_SakitBerat',57:'Q31_AdaKematian',
     61:'Q34_LamaSebelumCari',86:'Q55_KepercayaanFaskes'
   };
   return rows.slice(2).filter(r=>r.some(c=>c&&c.trim())).map(row=>{
     const r={};
     for(const [i,k] of Object.entries(KEY)) r[k]=(row[i]||'').trim();
+    if ((r.Q23_SakitBerat || '').toLowerCase() === 'tidak') {
+      r.Q24_BerapaKali = '';
+      r.Q25_KelompokUsia = '';
+      r.Q26_JenisSakit = '';
+    }
+    
     r.SkorRisiko=hitungSkor(r);
     r.KategoriRisiko=r.SkorRisiko>=6?'Tinggi':r.SkorRisiko>=3?'Sedang':'Rendah';
     return r;
@@ -562,12 +568,18 @@ function renderDynamic(data) {
 
   // Risk Factors
   const factors=[
-    {count:data.filter(r=>(r.Q9_PenyakitKronis||'').toLowerCase().includes('ada')).length,color:'#EF4444'},
-    {count:data.filter(r=>(r.Q14_Rokok||'').toLowerCase().includes('ya')).length,color:'#F59E0B'},
+    // Q9 Penyakit Kronis (Baris ~298): Ubah .includes('ada') jadi .startsWith('Ada')
+    {count:data.filter(r=>(r.Q9_PenyakitKronis||'').startsWith('Ada')).length,color:'#EF4444'},
+
+    // Q14 Rokok (Baris ~299): Ubah .includes('ya') jadi pencocokan teks persis
+    {count:data.filter(r=>(r.Q14_Rokok||'').trim()==='Ya, Merokok di dalam rumah').length,color:'#F59E0B'},
+
     {count:belumImun,color:'#F59E0B'},
     {count:data.filter(r=>(r.Q16_AirMinum||'').toLowerCase().match(/sungai|sumur gali/)).length,color:'#3B82F6'},
     {count:data.filter(r=>(r.Q18_Toilet||'').toLowerCase().match(/tidak ada|lubang/)).length,color:'#3B82F6'},
-    {count:data.filter(r=>(r.Q23_SakitBerat||'').toLowerCase()==='ya').length,color:'#E91E8C'},
+
+    // Q23 Sakit Berat (Baris ~303):
+    {count:data.filter(r=>(r.Q23_SakitBerat||'').trim()==='Ya').length,color:'#E91E8C'},
   ];
   document.getElementById('riskGrid').innerHTML=factors.map((f,i)=>{
     const pv=total>0?((f.count/total)*100).toFixed(1):0;
@@ -590,6 +602,65 @@ function renderDynamic(data) {
     </div>
   `).join('');
 
+  // ── Chart Faskes (Q20 Waktu Tempuh vs Q22 Jarak Fisik) ────────────────
+  const categories = ['< 30 min / < 1 km', '30–60 min / 1–5 km', '1–2 jam / 5–10 km', '> 2 jam / > 10 km'];
+
+  // Hitung distribusi Q20 (Waktu Tempuh)
+  const q20Data = [
+    data.filter(r => (r.Q20_JarakFaskes||'').includes('Kurang dari 30')).length,
+    data.filter(r => (r.Q20_JarakFaskes||'').includes('30–60')).length,
+    data.filter(r => (r.Q20_JarakFaskes||'').includes('1–2')).length,
+    data.filter(r => (r.Q20_JarakFaskes||'').includes('Lebih dari 2')).length
+  ];
+
+  // Hitung distribusi Q22 (Jarak Fisik)
+  const q22Data = [
+    data.filter(r => (r.Q22_JarakFaskes||'').includes('Kurang dari 1')).length,
+    data.filter(r => (r.Q22_JarakFaskes||'').includes('1–5')).length,
+    data.filter(r => (r.Q22_JarakFaskes||'').includes('5–10')).length,
+    data.filter(r => (r.Q22_JarakFaskes||'').includes('Lebih dari 10')).length
+  ];
+
+  // Hancurkan chart lama jika re-render
+  if (window.chartFaskesInstance) window.chartFaskesInstance.destroy();
+
+  // Inisialisasi Chart Grouped Bar
+  window.chartFaskesInstance = new Chart(document.getElementById('chartFaskes'), {
+    type: 'bar',
+    data: {
+      labels: categories,
+      datasets: [
+        {
+          label: 'Waktu Tempuh (Q20)',
+          data: q20Data,
+          backgroundColor: '#E91E8C', // Merah Muda (Warna bawaan dashboard)
+          borderRadius: 6,
+          borderSkipped: false
+        },
+        {
+          label: 'Jarak Fisik (Q22)',
+          data: q22Data,
+          backgroundColor: '#8B5CF6', // Ungu Accent
+          borderRadius: 6,
+          borderSkipped: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'bottom'
+        },
+        tooltip: TOOLTIP
+      },
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
   // Chart Faskes
   const faskesC=countBy(data.filter(r=>r.Q20_JarakFaskes),'Q20_JarakFaskes');
   const faskesArr=Object.entries(faskesC).sort((a,b)=>b[1]-a[1]).slice(0,6);
