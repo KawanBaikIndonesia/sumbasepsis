@@ -193,7 +193,7 @@ body{background:var(--gray-50);color:var(--gray-900);font-family:var(--font);fon
       </div>
       <div class="hero-stat">
         <div class="hero-stat-val" id="heroDusun">—</div>
-        <div class="hero-stat-label" data-id="Dusun Tercakup" data-en="Villages Covered">Dusun Tercakup</div>
+        <div class="hero-stat-label" data-id="Desa & Dusun Tercakup" data-en="Villages & Hamlets Covered">Desa & Dusun Tercakup</div>
       </div>
       <div class="hero-stat">
         <div class="hero-stat-val" id="heroPetugas">—</div>
@@ -532,12 +532,19 @@ function parseData(csv) {
 // ── RENDER STATIC (run once) ──────────────────────────────
 function renderStatic(data) {
   const total = data.length;
-  const dusunSet = new Set(data.map(r=>r.DusunArea||r.Dusun).filter(Boolean));
+  const desaSet = new Set(data.map(r => r.Desa).filter(Boolean));
+  const dusunSet = new Set(data.map(r => r.DusunArea || r.Dusun).filter(Boolean));
   const petugasSet = new Set(data.map(r=>r.NamaPetugas).filter(Boolean));
 
   // Hero stats
+  // Tampilkan perpaduan: "41 Dusun (10 Desa)" atau "41 Hamlets (10 Villages)"
+  if (currentLang === 'id') {
+    document.getElementById('heroDusun').textContent = `${dusunSet.size} Dusun (${desaSet.size} Desa)`;
+  } else {
+    document.getElementById('heroDusun').textContent = `${dusunSet.size} Hamlets (${desaSet.size} Villages)`;
+  }
+  
   document.getElementById('heroTotal').textContent = total;
-  document.getElementById('heroDusun').textContent = dusunSet.size;
   document.getElementById('heroPetugas').textContent = petugasSet.size;
 
   // Periode (Diurutkan berdasarkan objek Date yang benar)
@@ -603,22 +610,49 @@ function renderDynamic(data) {
     {plugins:{legend:LEGEND('right'),tooltip:TOOLTIP}}
   );
 
-  // Chart Dusun (Menampilkan seluruh 41 Dusun secara lengkap)
-  const dusunC = countBy(data, 'DusunArea');
-  const dusunArr = Object.entries(dusunC)
-    .filter(d => d[0] && d[0] !== '—')
-    .sort((a, b) => b[1] - a[1]);
+  // Grouping data per Desa beserta breakdown Dusun-nya
+  const desaGroup = {};
+  data.forEach(r => {
+    const desa = r.Desa || 'Lainnya';
+    const dusun = r.DusunArea || r.Dusun || 'Lainnya';
+    if (!desaGroup[desa]) desaGroup[desa] = { total: 0, dusunMap: {} };
+    desaGroup[desa].total += 1;
+    desaGroup[desa].dusunMap[dusun] = (desaGroup[desa].dusunMap[dusun] || 0) + 1;
+  });
+
+  const sortedDesa = Object.entries(desaGroup).sort((a, b) => b[1].total - a[1].total);
 
   makeChart('chartDusun', 'bar',
-    dusunArr.map(d => d[0]),
+    sortedDesa.map(d => d[0]),
     [{
-      label: L.chartDusunLabel,
-      data: dusunArr.map(d => d[1]),
-      backgroundColor: dusunArr.map((_, i) => `rgba(233,30,140,${Math.max(0.3, 0.9 - i * 0.015)})`),
-      borderRadius: 4,
+      label: L.surveysLabel,
+      data: sortedDesa.map(d => d[1].total),
+      backgroundColor: sortedDesa.map((_, i) => `rgba(233,30,140,${Math.max(0.35, 0.9 - i * 0.08)})`),
+      borderRadius: 6,
       borderSkipped: false
     }],
-    { indexAxis: 'y', plugins: { legend: { display: false }, tooltip: TOOLTIP } }
+    {
+      indexAxis: 'y',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          ...TOOLTIP,
+          callbacks: {
+            // Menampilkan daftar Dusun di dalam Tooltip saat di-hover
+            afterBody: function(context) {
+              const desaName = context[0].label;
+              const dusunData = desaGroup[desaName]?.dusunMap;
+              if (!dusunData) return '';
+              
+              const list = Object.entries(dusunData)
+                .map(([dusun, count]) => `• ${dusun}: ${count}`)
+                .join('\n');
+              return '\nRincian Dusun:\n' + list;
+            }
+          }
+        }
+      }
+    }
   );
 
   // Chart Tren
