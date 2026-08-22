@@ -367,8 +367,14 @@ function buildInsights(data, lang) {
   const tinggi = data.filter(r => r.KategoriRisiko === 'Tinggi').length;
   
   // Posisi Penyesuaian 1: Penggunaan RegEx /ada/i dan /ya/i
-  const kronis = data.filter(r => /ada/i.test(r.Q9_PenyakitKronis || '')).length;
-  const rokok = data.filter(r => /ya/i.test(r.Q14_Rokok || '')).length;
+  // 1. Pada fungsi buildInsights()
+// Memastikan TIDAK menghitung "Tidak ada"
+const kronis = data.filter(r => {
+  const val = (r.Q9_PenyakitKronis || '').toLowerCase();
+  return val.includes('ada,') || val.includes('lainnya');
+}).length;
+  const rokok = data.filter(r => (r.Q14_Rokok || '').toLowerCase().includes('merokok di dalam')).length;
+  
   
   const kematian = data.filter(r => (r.Q31_AdaKematian || '').toLowerCase().match(/ada|meninggal/)).length;
   const p = n => total > 0 ? ((n / total) * 100).toFixed(1) + '%' : '0%'
@@ -571,19 +577,16 @@ function renderDynamic(data) {
 
  // Risk Factors
   const factors = [
-    // Q9 Penyakit Kronis: Menangkap "Ada, Tekanan darah tinggi", "Ada, Diabetes", dll.
-    { count: data.filter(r => /ada/i.test(r.Q9_PenyakitKronis || '')).length, color: '#EF4444' },
-
-    // Q14 Rokok: Menangkap "Ya, Merokok di dalam rumah" tanpa risik kerentanan spasi ganda/format
-    { count: data.filter(r => /ya/i.test(r.Q14_Rokok || '')).length, color: '#F59E0B' },
-
-    { count: belumImun, color: '#F59E0B' },
-    { count: data.filter(r => (r.Q16_AirMinum || '').toLowerCase().match(/sungai|sumur gali/)).length, color: '#3B82F6' },
-    { count: data.filter(r => (r.Q18_Toilet || '').toLowerCase().match(/tidak ada|lubang/)).length, color: '#3B82F6' },
-
-    // Q23 Sakit Berat:
-    { count: data.filter(r => /ya/i.test(r.Q23_SakitBerat || '')).length, color: '#E91E8C' },
-  ];
+  { count: data.filter(r => {
+      const val = (r.Q9_PenyakitKronis || '').toLowerCase();
+      return val.includes('ada,') || val.includes('lainnya');
+    }).length, color: '#EF4444' },
+  { count: data.filter(r => (r.Q14_Rokok || '').toLowerCase().includes('merokok di dalam')).length, color: '#F59E0B' },
+  { count: belumImun, color: '#F59E0B' },
+  { count: data.filter(r => (r.Q16_AirMinum || '').toLowerCase().match(/sungai|sumur gali/)).length, color: '#3B82F6' },
+  { count: data.filter(r => (r.Q18_Toilet || '').toLowerCase().match(/tidak ada|lubang/)).length, color: '#3B82F6' },
+  { count: data.filter(r => (r.Q23_SakitBerat || '').toLowerCase().startsWith('ya')).length, color: '#E91E8C' },
+];
   
   document.getElementById('riskGrid').innerHTML=factors.map((f,i)=>{
     const pv=total>0?((f.count/total)*100).toFixed(1):0;
