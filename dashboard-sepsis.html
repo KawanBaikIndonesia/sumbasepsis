@@ -538,12 +538,26 @@ function renderStatic(data) {
   document.getElementById('heroDusun').textContent = dusunSet.size;
   document.getElementById('heroPetugas').textContent = petugasSet.size;
 
-  // Periode
-  const dates = data.map(r=>r.Timestamp).filter(Boolean).sort();
-  if(dates.length) {
-    const first = dates[0].split(' ')[0];
-    const last = dates[dates.length-1].split(' ')[0];
-    document.getElementById('heroPeriode').textContent = first===last ? first : first+' – '+last;
+  // Periode (Diurutkan berdasarkan objek Date yang benar)
+  const validDates = data
+    .map(r => {
+      if (!r.Timestamp) return null;
+      const datePart = r.Timestamp.split(' ')[0]; // Ambil DD/MM/YYYY
+      const parts = datePart.split('/');
+      if (parts.length === 3) {
+        // Format ke YYYY-MM-DD agar objek Date valid
+        const isoStr = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+        return { original: datePart, time: new Date(isoStr).getTime() };
+      }
+      return null;
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.time - b.time); // Urutkan kronologis dari terlama ke terbaru
+
+  if (validDates.length) {
+    const first = validDates[0].original;
+    const last = validDates[validDates.length - 1].original;
+    document.getElementById('heroPeriode').textContent = first === last ? first : first + ' – ' + last;
   }
 
   document.getElementById('heroSection').style.display='block';
