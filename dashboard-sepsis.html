@@ -652,13 +652,27 @@ function renderDynamic(data) {
   );
 
   // Chart Tren
-  const trenC={};
-  data.forEach(r=>{
-    if(!r.Timestamp) return;
-    const parts=r.Timestamp.split(' ')[0].split('/');
-    if(parts.length===3){const k=`${parts[0]}/${parts[1]}`;trenC[k]=(trenC[k]||0)+1;}
+  const trenC = {};
+  data.forEach(r => {
+    if (!r.Timestamp) return;
+    const datePart = r.Timestamp.split(' ')[0]; // DD/MM/YYYY
+    const parts = datePart.split('/');
+    if (parts.length === 3) {
+      // Format ISO YYYY-MM-DD agar Date() bisa memparsing dengan benar
+      const isoDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+      const label = `${parts[0]}/${parts[1]}`; // DD/MM
+      
+      if (!trenC[isoDate]) {
+        trenC[isoDate] = { label: label, count: 0 };
+      }
+      trenC[isoDate].count += 1;
+    }
   });
-  const trenArr=Object.entries(trenC).sort();
+  // Urutkan kunci ISO (YYYY-MM-DD) secara kronologis
+  const trenArr = Object.keys(trenC)
+    .sort()
+    .map(isoKey => [trenC[isoKey].label, trenC[isoKey].count]);
+  
   makeChart('chartTren','line',
     trenArr.map(t=>t[0]),
     [{label:L.surveysLabel,data:trenArr.map(t=>t[1]),
