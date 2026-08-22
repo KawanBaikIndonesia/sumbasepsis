@@ -338,6 +338,21 @@ const T = {
     insights: (d) => buildInsights(d, 'id'),
     chartDusunLabel: 'Survei',
     noDataNote: 'Data belum tersedia',
+    
+    // Pemetaan Teks CSV -> ID
+    trustMap: {
+      'Sangat percaya': 'Sangat percaya',
+      'Cukup percaya': 'Cukup percaya',
+      'Kurang percaya': 'Kurang percaya',
+      'Tidak percaya': 'Tidak percaya'
+    },
+    waterMap: {
+      'Sumur / mata air tertutup atau terlindungi': 'Sumur / mata air terlindungi',
+      'Sumur terbuka / air permukaan': 'Sumur terbuka / air permukaan',
+      'Air kiriman / air kemasan': 'Air kiriman / air kemasan',
+      'Penampungan air hujan': 'Penampungan air hujan',
+      'Sungai / kali / danau': 'Sungai / kali / danau'
+    }
   },
   en: {
     ofTotal: 'of total surveys',
@@ -359,6 +374,21 @@ const T = {
     insights: (d) => buildInsights(d, 'en'),
     chartDusunLabel: 'Surveys',
     noDataNote: 'No data available yet',
+
+    // Pemetaan Teks CSV -> EN
+    trustMap: {
+      'Sangat percaya': 'Very confident',
+      'Cukup percaya': 'Fairly confident',
+      'Kurang percaya': 'Less confident',
+      'Tidak percaya': 'Not confident'
+    },
+    waterMap: {
+      'Sumur / mata air tertutup atau terlindungi': 'Protected well / spring',
+      'Sumur terbuka / air permukaan': 'Unprotected well / surface',
+      'Air kiriman / air kemasan': 'Delivered / bottled water',
+      'Penampungan air hujan': 'Rainwater harvesting',
+      'Sungai / kali / danau': 'River / stream / lake'
+    }
   }
 };
 
