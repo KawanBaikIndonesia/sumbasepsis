@@ -679,27 +679,49 @@ function renderDynamic(data) {
     }
   });
 
-  // Chart Kepercayaan
-  const percC=countBy(data.filter(r=>r.Q55_KepercayaanFaskes),'Q55_KepercayaanFaskes');
-  const percArr=Object.entries(percC);
-  makeChart('chartPercaya','doughnut',
-    percArr.map(e=>e[0]),
-    [{data:percArr.map(e=>e[1]),
-      backgroundColor:['#10B981','#3B82F6','#F59E0B','#EF4444','#E91E8C'],
-      borderColor:'#fff',borderWidth:3}],
-    {plugins:{legend:LEGEND('right'),tooltip:TOOLTIP}}
+  // ── Chart Kepercayaan Faskes ──────────────────────────────────────────
+  const percC = countBy(data.filter(r => r.Q55_KepercayaanFaskes), 'Q55_KepercayaanFaskes');
+  const percArr = Object.entries(percC);
+  // Menerjemahkan label donat kepercayaan
+  const trustLabels = percArr.map(e => {
+    const raw = e[0];
+    return (L.trustMap && L.trustMap[raw]) ? L.trustMap[raw] : raw;
+  });
+  makeChart('chartPercaya', 'doughnut',
+    trustLabels,
+    [{
+      data: percArr.map(e => e[1]),
+      backgroundColor: ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#E91E8C'],
+      borderColor: '#fff',
+      borderWidth: 3
+    }],
+    { plugins: { legend: LEGEND('right'), tooltip: TOOLTIP } }
   );
 
-  // Chart Air
-  const airC=countBy(data.filter(r=>r.Q16_AirMinum),'Q16_AirMinum');
-  const airArr=Object.entries(airC).sort((a,b)=>b[1]-a[1]).slice(0,6);
-  makeChart('chartAir','bar',
-    airArr.map(e=>e[0].length>18?e[0].slice(0,18)+'…':e[0]),
-    [{label:L.hhLabel,data:airArr.map(e=>e[1]),
-      backgroundColor:'rgba(59,130,246,0.75)',borderRadius:6,borderSkipped:false}],
-    {plugins:{legend:{display:false},tooltip:TOOLTIP}}
+  // ── Chart Sumber Air ──────────────────────────────────────────────────
+  const airC = countBy(data.filter(r => r.Q16_AirMinum), 'Q16_AirMinum');
+  const airArr = Object.entries(airC).sort((a, b) => b[1] - a[1]).slice(0, 6);
+
+  // Menerjemahkan label batang air minum
+  const airLabels = airArr.map(e => {
+    let raw = e[0];
+    if (L.waterMap && L.waterMap[raw]) {
+      raw = L.waterMap[raw];
+    }
+    return raw.length > 18 ? raw.slice(0, 18) + '…' : raw;
+  });
+
+  makeChart('chartAir', 'bar',
+    airLabels,
+    [{
+      label: L.hhLabel,
+      data: airArr.map(e => e[1]),
+      backgroundColor: 'rgba(59,130,246,0.75)',
+      borderRadius: 6,
+      borderSkipped: false
+    }],
+    { plugins: { legend: { display: false }, tooltip: TOOLTIP } }
   );
-}
 
 // ── LOAD ──────────────────────────────────────────────────
 async function loadData() {
