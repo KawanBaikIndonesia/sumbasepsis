@@ -603,15 +603,22 @@ function renderDynamic(data) {
     {plugins:{legend:LEGEND('right'),tooltip:TOOLTIP}}
   );
 
-  // Chart Dusun
-  const dusunC=countBy(data,'DusunArea');
-  const dusunArr=Object.entries(dusunC).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  makeChart('chartDusun','bar',
-    dusunArr.map(d=>d[0]),
-    [{label:L.chartDusunLabel,data:dusunArr.map(d=>d[1]),
-      backgroundColor:dusunArr.map((_,i)=>`rgba(233,30,140,${0.85-i*0.07})`),
-      borderRadius:6,borderSkipped:false}],
-    {indexAxis:'y',plugins:{legend:{display:false},tooltip:TOOLTIP}}
+  // Chart Dusun (Menampilkan seluruh 41 Dusun secara lengkap)
+  const dusunC = countBy(data, 'DusunArea');
+  const dusunArr = Object.entries(dusunC)
+    .filter(d => d[0] && d[0] !== '—')
+    .sort((a, b) => b[1] - a[1]);
+
+  makeChart('chartDusun', 'bar',
+    dusunArr.map(d => d[0]),
+    [{
+      label: L.chartDusunLabel,
+      data: dusunArr.map(d => d[1]),
+      backgroundColor: dusunArr.map((_, i) => `rgba(233,30,140,${Math.max(0.3, 0.9 - i * 0.015)})`),
+      borderRadius: 4,
+      borderSkipped: false
+    }],
+    { indexAxis: 'y', plugins: { legend: { display: false }, tooltip: TOOLTIP } }
   );
 
   // Chart Tren
