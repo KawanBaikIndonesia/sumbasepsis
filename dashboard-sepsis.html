@@ -603,73 +603,65 @@ function renderDynamic(data) {
   `).join('');
 
   // ── Chart Faskes (Q20 Waktu Tempuh vs Q22 Jarak Fisik) ────────────────
-  const categories = ['< 30 min / < 1 km', '30–60 min / 1–5 km', '1–2 jam / 5–10 km', '> 2 jam / > 10 km'];
+const categories = ['< 30 min / < 1 km', '30–60 min / 1–5 km', '1–2 jam / 5–10 km', '> 2 jam / > 10 km'];
 
-  // Hitung distribusi Q20 (Waktu Tempuh)
-  const q20Data = [
-    data.filter(r => (r.Q20_JarakFaskes||'').includes('Kurang dari 30')).length,
-    data.filter(r => (r.Q20_JarakFaskes||'').includes('30–60')).length,
-    data.filter(r => (r.Q20_JarakFaskes||'').includes('1–2')).length,
-    data.filter(r => (r.Q20_JarakFaskes||'').includes('Lebih dari 2')).length
-  ];
+// Hitung distribusi Q20 (Waktu Tempuh)
+const q20Data = [
+  data.filter(r => (r.Q20_JarakFaskes||'').includes('Kurang dari 30')).length,
+  data.filter(r => (r.Q20_JarakFaskes||'').includes('30–60')).length,
+  data.filter(r => (r.Q20_JarakFaskes||'').includes('1–2')).length,
+  data.filter(r => (r.Q20_JarakFaskes||'').includes('Lebih dari 2')).length
+];
 
-  // Hitung distribusi Q22 (Jarak Fisik)
-  const q22Data = [
-    data.filter(r => (r.Q22_JarakFaskes||'').includes('Kurang dari 1')).length,
-    data.filter(r => (r.Q22_JarakFaskes||'').includes('1–5')).length,
-    data.filter(r => (r.Q22_JarakFaskes||'').includes('5–10')).length,
-    data.filter(r => (r.Q22_JarakFaskes||'').includes('Lebih dari 10')).length
-  ];
+// Hitung distribusi Q22 (Jarak Fisik)
+const q22Data = [
+  data.filter(r => (r.Q22_JarakFaskes||'').includes('Kurang dari 1')).length,
+  data.filter(r => (r.Q22_JarakFaskes||'').includes('1–5')).length,
+  data.filter(r => (r.Q22_JarakFaskes||'').includes('5–10')).length,
+  data.filter(r => (r.Q22_JarakFaskes||'').includes('Lebih dari 10')).length
+];
 
-  // Hancurkan chart lama jika re-render
-  if (window.chartFaskesInstance) window.chartFaskesInstance.destroy();
+// 🔧 FIX ERROR: Hancurkan instance chart pada canvas 'chartFaskes' via API internal Chart.js
+const chartExist = Chart.getChart('chartFaskes');
+if (chartExist) chartExist.destroy();
 
-  // Inisialisasi Chart Grouped Bar
-  window.chartFaskesInstance = new Chart(document.getElementById('chartFaskes'), {
-    type: 'bar',
-    data: {
-      labels: categories,
-      datasets: [
-        {
-          label: 'Waktu Tempuh (Q20)',
-          data: q20Data,
-          backgroundColor: '#E91E8C', // Merah Muda (Warna bawaan dashboard)
-          borderRadius: 6,
-          borderSkipped: false
-        },
-        {
-          label: 'Jarak Fisik (Q22)',
-          data: q22Data,
-          backgroundColor: '#8B5CF6', // Ungu Accent
-          borderRadius: 6,
-          borderSkipped: false
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: true,
-          position: 'bottom'
-        },
-        tooltip: TOOLTIP
+// Inisialisasi Chart Grouped Bar
+new Chart(document.getElementById('chartFaskes'), {
+  type: 'bar',
+  data: {
+    labels: categories,
+    datasets: [
+      {
+        label: 'Waktu Tempuh (Q20)',
+        data: q20Data,
+        backgroundColor: '#E91E8C', // Merah Muda (Warna bawaan dashboard)
+        borderRadius: 6,
+        borderSkipped: false
       },
-      scales: {
-        y: { beginAtZero: true }
+      {
+        label: 'Jarak Fisik (Q22)',
+        data: q22Data,
+        backgroundColor: '#8B5CF6', // Ungu Accent
+        borderRadius: 6,
+        borderSkipped: false
       }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: true,
+        position: 'bottom'
+      },
+      tooltip: TOOLTIP
+    },
+    scales: {
+      y: { beginAtZero: true }
     }
-  });
-  // Chart Faskes
-  const faskesC=countBy(data.filter(r=>r.Q20_JarakFaskes),'Q20_JarakFaskes');
-  const faskesArr=Object.entries(faskesC).sort((a,b)=>b[1]-a[1]).slice(0,6);
-  makeChart('chartFaskes','bar',
-    faskesArr.map(e=>e[0].length>18?e[0].slice(0,18)+'…':e[0]),
-    [{label:L.respLabel,data:faskesArr.map(e=>e[1]),
-      backgroundColor:'rgba(233,30,140,0.75)',borderRadius:6,borderSkipped:false}],
-    {plugins:{legend:{display:false},tooltip:TOOLTIP}}
-  );
+  }
+});
 
   // Chart Kepercayaan
   const percC=countBy(data.filter(r=>r.Q55_KepercayaanFaskes),'Q55_KepercayaanFaskes');
