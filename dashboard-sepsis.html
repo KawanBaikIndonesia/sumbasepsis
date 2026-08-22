@@ -287,9 +287,9 @@ body{background:var(--gray-50);color:var(--gray-900);font-family:var(--font);fon
   <div class="section-label" data-id="Akses Layanan & Kepercayaan" data-en="Healthcare Access & Trust">Akses Layanan & Kepercayaan</div>
   <div class="chart-grid">
     <div class="chart-card">
-      <div class="chart-title" data-id="Aksesibilitas Fasilitas Kesehatan" data-en="Healthcare Access">Aksesibilitas Fasilitas Kesehatan</div>
-      <div class="chart-sub" data-id="perbandingan waktu tempuh (Q20) dan jarak fisik (Q22) ke faskes terdekat" data-en="comparison of travel time (Q20) and physical distance (Q22) to nearest health facility">perbandingan waktu tempuh (Q20) dan jarak fisik (Q22) ke faskes terdekat</div>
-      <div class="chart-wrap"><canvas id="chartFaskes"></canvas></div>
+  <div class="chart-title" data-id="Waktu Tempuh ke Faskes" data-en="Travel Time to Health Facility">Waktu Tempuh ke Faskes</div>
+  <div class="chart-sub" data-id="durasi perjalanan rumah tangga ke fasilitas kesehatan terdekat (Q20)" data-en="household travel duration to the nearest health facility (Q20)">durasi perjalanan rumah tangga ke fasilitas kesehatan terdekat (Q20)</div>
+  <div class="chart-wrap"><canvas id="chartFaskes"></canvas></div>
     </div>
     <div class="chart-card">
       <div class="chart-title" data-id="Kepercayaan terhadap Faskes" data-en="Trust in Health Facilities">Kepercayaan terhadap Faskes</div>
@@ -340,8 +340,9 @@ const T = {
     noDataNote: 'Data belum tersedia',
 
     // Faskes
-    faskesTravel: 'Waktu Tempuh (Q20)',
-    faskesDist: 'Jarak Fisik (Q22)',
+    faskesTitle: 'Waktu Tempuh ke Faskes',
+    faskesSub: 'durasi perjalanan rumah tangga ke fasilitas kesehatan terdekat (Q20)',
+    faskesLabel: 'Rumah tangga',
     
     // Pemetaan Teks CSV -> ID
     trustMap: {
@@ -380,8 +381,9 @@ const T = {
     noDataNote: 'No data available yet',
 
     // Faskes
-    faskesTravel: 'Travel Time (Q20)',
-    faskesDist: 'Physical Distance (Q22)',
+    faskesTitle: 'Travel Time to Health Facility',
+    faskesSub: 'household travel duration to the nearest health facility (Q20)',
+    faskesLabel: 'Households',
     
     // Pemetaan Teks CSV -> EN
     trustMap: {
@@ -661,9 +663,14 @@ function renderDynamic(data) {
     </div>
   `).join('');
 
-  // ── Chart Faskes (Q20 Waktu Tempuh vs Q22 Jarak Fisik) ────────────────
-  // Posisi Penyesuaian 2B: Grafik Faskes (Q20 vs Q22)
-  const categories = ['< 30m / < 1km', '30–60m / 1–5km', '1–2j / 5–10km', '> 2j / > 10km'];
+  // ── Chart Faskes (Hanya Q20 Waktu Tempuh) ────────────────────────────
+  const categoriesQ20 = ['< 30 menit', '30–60 menit', '1–2 jam', '> 2 jam'];
+  if (currentLang === 'en') {
+    categoriesQ20[0] = '< 30 minutes';
+    categoriesQ20[1] = '30–60 minutes';
+    categoriesQ20[2] = '1–2 hours';
+    categoriesQ20[3] = '> 2 hours';
+  }
 
   const q20Data = [
     data.filter(r => /kurang.*30/i.test(r.Q20_JarakFaskes || '')).length,
@@ -672,32 +679,18 @@ function renderDynamic(data) {
     data.filter(r => /lebih.*2/i.test(r.Q20_JarakFaskes || '')).length
   ];
 
-  const q22Data = [
-    data.filter(r => /kurang.*1/i.test(r.Q22_JarakFaskes || '')).length,
-    data.filter(r => /1[\s–\-]+5/i.test(r.Q22_JarakFaskes || '')).length,
-    data.filter(r => /5[\s–\-]+10/i.test(r.Q22_JarakFaskes || '')).length,
-    data.filter(r => /lebih.*10/i.test(r.Q22_JarakFaskes || '')).length
-  ];
-
-  makeChart('chartFaskes', 'bar', categories, [
+  makeChart('chartFaskes', 'bar', categoriesQ20, [
     {
-      label: L.faskesTravel,
+      label: L.faskesLabel,
       data: q20Data,
       backgroundColor: '#E91E8C',
       borderRadius: 6,
       borderSkipped: false
-    },
-    {
-      label: L.faskesDist,
-      data: q22Data,
-      backgroundColor: '#8B5CF6',
-      borderRadius: 6,
-      borderSkipped: false
     }
   ], {
-    indexAxis: 'y', // <--- Mengubah ke horizontal
+    indexAxis: 'y', // Horizontal Bar Chart
     plugins: {
-      legend: { display: true, position: 'bottom' },
+      legend: { display: false }, // Legend disembunyikan karena hanya 1 variabel
       tooltip: TOOLTIP
     }
   });
