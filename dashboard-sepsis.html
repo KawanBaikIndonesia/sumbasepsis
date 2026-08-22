@@ -365,10 +365,13 @@ const T = {
 function buildInsights(data, lang) {
   const total = data.length;
   const tinggi = data.filter(r => r.KategoriRisiko === 'Tinggi').length;
-  const kronis = data.filter(r => (r.Q9_PenyakitKronis||'').toLowerCase().includes('ada')).length;
-  const rokok = data.filter(r => (r.Q14_Rokok||'').toLowerCase().includes('ya')).length;
-  const kematian = data.filter(r => (r.Q31_AdaKematian||'').toLowerCase().match(/ada|meninggal/)).length;
-  const p = n => total > 0 ? ((n/total)*100).toFixed(1)+'%' : '0%';
+  
+  // Posisi Penyesuaian 1: Penggunaan RegEx /ada/i dan /ya/i
+  const kronis = data.filter(r => /ada/i.test(r.Q9_PenyakitKronis || '')).length;
+  const rokok = data.filter(r => /ya/i.test(r.Q14_Rokok || '')).length;
+  
+  const kematian = data.filter(r => (r.Q31_AdaKematian || '').toLowerCase().match(/ada|meninggal/)).length;
+  const p = n => total > 0 ? ((n / total) * 100).toFixed(1) + '%' : '0%'
 
   if (lang === 'id') return [
     { tag: 'Risiko Kritis', text: `${p(tinggi)} (${tinggi} dari ${total}) rumah tangga masuk kategori risiko tinggi sepsis dan memerlukan tindak lanjut segera.` },
@@ -462,7 +465,7 @@ function parseData(csv) {
     7:'NamaLengkap',9:'JenisKelamin',11:'Umur',12:'Desa',13:'Dusun',
     21:'Q5_JmlBalita',22:'Q6_Imunisasi',25:'Q9_PenyakitKronis',
     31:'Q14_Rokok',40:'Q16_AirMinum',42:'Q18_Toilet',43:'Q19_CTPS',
-    44:'Q20_JarakFaskes',48:'Q23_SakitBerat',57:'Q31_AdaKematian',
+    44:'Q20_JarakFaskes',46:'Q22_JarakFaskes',48:'Q23_SakitBerat',57:'Q31_AdaKematian',
     61:'Q34_LamaSebelumCari',86:'Q55_KepercayaanFaskes'
   };
   return rows.slice(2).filter(r=>r.some(c=>c&&c.trim())).map(row=>{
@@ -566,21 +569,22 @@ function renderDynamic(data) {
       fill:true,tension:0.4,pointBackgroundColor:'#E91E8C',pointRadius:4,pointHoverRadius:6}]
   );
 
-  // Risk Factors
-  const factors=[
-    // Q9 Penyakit Kronis (Baris ~298): Ubah .includes('ada') jadi .startsWith('Ada')
-    {count:data.filter(r=>(r.Q9_PenyakitKronis||'').startsWith('Ada')).length,color:'#EF4444'},
+ // Risk Factors
+  const factors = [
+    // Q9 Penyakit Kronis: Menangkap "Ada, Tekanan darah tinggi", "Ada, Diabetes", dll.
+    { count: data.filter(r => /ada/i.test(r.Q9_PenyakitKronis || '')).length, color: '#EF4444' },
 
-    // Q14 Rokok (Baris ~299): Ubah .includes('ya') jadi pencocokan teks persis
-    {count:data.filter(r=>(r.Q14_Rokok||'').trim()==='Ya, Merokok di dalam rumah').length,color:'#F59E0B'},
+    // Q14 Rokok: Menangkap "Ya, Merokok di dalam rumah" tanpa risik kerentanan spasi ganda/format
+    { count: data.filter(r => /ya/i.test(r.Q14_Rokok || '')).length, color: '#F59E0B' },
 
-    {count:belumImun,color:'#F59E0B'},
-    {count:data.filter(r=>(r.Q16_AirMinum||'').toLowerCase().match(/sungai|sumur gali/)).length,color:'#3B82F6'},
-    {count:data.filter(r=>(r.Q18_Toilet||'').toLowerCase().match(/tidak ada|lubang/)).length,color:'#3B82F6'},
+    { count: belumImun, color: '#F59E0B' },
+    { count: data.filter(r => (r.Q16_AirMinum || '').toLowerCase().match(/sungai|sumur gali/)).length, color: '#3B82F6' },
+    { count: data.filter(r => (r.Q18_Toilet || '').toLowerCase().match(/tidak ada|lubang/)).length, color: '#3B82F6' },
 
-    // Q23 Sakit Berat (Baris ~303):
-    {count:data.filter(r=>(r.Q23_SakitBerat||'').trim()==='Ya').length,color:'#E91E8C'},
+    // Q23 Sakit Berat:
+    { count: data.filter(r => /ya/i.test(r.Q23_SakitBerat || '')).length, color: '#E91E8C' },
   ];
+  
   document.getElementById('riskGrid').innerHTML=factors.map((f,i)=>{
     const pv=total>0?((f.count/total)*100).toFixed(1):0;
     return `<div class="risk-card">
@@ -603,25 +607,23 @@ function renderDynamic(data) {
   `).join('');
 
   // ── Chart Faskes (Q20 Waktu Tempuh vs Q22 Jarak Fisik) ────────────────
+  // Posisi Penyesuaian 2B: Grafik Faskes (Q20 vs Q22)
   const categories = ['< 30m / < 1km', '30–60m / 1–5km', '1–2j / 5–10km', '> 2j / > 10km'];
 
-  // Hitung distribusi Q20 (Waktu Tempuh)
   const q20Data = [
-    data.filter(r => (r.Q20_JarakFaskes||'').includes('Kurang dari 30')).length,
-    data.filter(r => (r.Q20_JarakFaskes||'').includes('30–60')).length,
-    data.filter(r => (r.Q20_JarakFaskes||'').includes('1–2')).length,
-    data.filter(r => (r.Q20_JarakFaskes||'').includes('Lebih dari 2')).length
+    data.filter(r => /kurang.*30/i.test(r.Q20_JarakFaskes || '')).length,
+    data.filter(r => /30.*60/i.test(r.Q20_JarakFaskes || '')).length,
+    data.filter(r => /1.*2/i.test(r.Q20_JarakFaskes || '')).length,
+    data.filter(r => /lebih.*2/i.test(r.Q20_JarakFaskes || '')).length
   ];
 
-  // Hitung distribusi Q22 (Jarak Fisik)
   const q22Data = [
-    data.filter(r => (r.Q22_JarakFaskes||'').includes('Kurang dari 1')).length,
-    data.filter(r => (r.Q22_JarakFaskes||'').includes('1–5')).length,
-    data.filter(r => (r.Q22_JarakFaskes||'').includes('5–10')).length,
-    data.filter(r => (r.Q22_JarakFaskes||'').includes('Lebih dari 10')).length
+    data.filter(r => /kurang.*1/i.test(r.Q22_JarakFaskes || '')).length,
+    data.filter(r => /1[\s–\-]+5/i.test(r.Q22_JarakFaskes || '')).length,
+    data.filter(r => /5[\s–\-]+10/i.test(r.Q22_JarakFaskes || '')).length,
+    data.filter(r => /lebih.*10/i.test(r.Q22_JarakFaskes || '')).length
   ];
 
-  // Gunakan fungsi makeChart bawaan dashboard Anda untuk membuat Grouped Bar
   makeChart('chartFaskes', 'bar', categories, [
     {
       label: 'Waktu Tempuh (Q20)',
