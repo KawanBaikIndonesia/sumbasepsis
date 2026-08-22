@@ -338,6 +338,10 @@ const T = {
     insights: (d) => buildInsights(d, 'id'),
     chartDusunLabel: 'Survei',
     noDataNote: 'Data belum tersedia',
+
+    // Faskes
+    faskesTravel: 'Waktu Tempuh (Q20)',
+    faskesDist: 'Jarak Fisik (Q22)',
     
     // Pemetaan Teks CSV -> ID
     trustMap: {
@@ -375,6 +379,10 @@ const T = {
     chartDusunLabel: 'Surveys',
     noDataNote: 'No data available yet',
 
+    // Faskes
+    faskesTravel: 'Travel Time (Q20)',
+    faskesDist: 'Physical Distance (Q22)',
+    
     // Pemetaan Teks CSV -> EN
     trustMap: {
       'Sangat percaya': 'Very confident',
@@ -659,14 +667,14 @@ function renderDynamic(data) {
 
   makeChart('chartFaskes', 'bar', categories, [
     {
-      label: 'Waktu Tempuh (Q20)',
+      label: L.faskesTravel,
       data: q20Data,
       backgroundColor: '#E91E8C',
       borderRadius: 6,
       borderSkipped: false
     },
     {
-      label: 'Jarak Fisik (Q22)',
+      label: L.faskesDist,
       data: q22Data,
       backgroundColor: '#8B5CF6',
       borderRadius: 6,
