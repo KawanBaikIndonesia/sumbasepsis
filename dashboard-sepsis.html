@@ -594,9 +594,27 @@ function renderDynamic(data) {
   document.getElementById('kpiHariIni').textContent=hariIni;
   document.getElementById('kpiHariIniSub').textContent=`${dd} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][now.getMonth()]} ${yyyy}`;
 
-  const punyaBalita=data.filter(r=>r.Q5_JmlBalita&&r.Q5_JmlBalita!=='0');
-  const belumImun=punyaBalita.filter(r=>(r.Q6_Imunisasi||'').toLowerCase().match(/belum|sebagian/)).length;
-  document.getElementById('kpiImunisasi').textContent=belumImun;
+  // Filter rumah tangga yang punya balita (>0)
+  const punyaBalita = data.filter(r => {
+  const jml = parseInt(r.Q5_JmlBalita, 10);
+  return !isNaN(jml) && jml > 0;
+  });
+
+  const totalRumahTanggaBalita = punyaBalita.length;
+
+  // Filter balita yang imunisasinya belum lengkap
+  const belumImun = punyaBalita.filter(r => 
+  (r.Q6_Imunisasi || '').toLowerCase().match(/belum|sebagian|tidak/)
+  ).length;
+
+  // Persentase yang benar: (Belum Lengkap / Hanya yang Punya Balita) * 100
+  const pctImunisasi = totalRumahTanggaBalita > 0 
+  ? ((belumImun / totalRumahTanggaBalita) * 100).toFixed(1) + '%' 
+  : '0%';
+
+  // Update tampilan KPI
+  document.getElementById('kpiImunisasi').textContent = belumImun;
+  document.getElementById('kpiImunisasiSub').textContent = `${pctImunisasi} (${belumImun} dari ${totalRumahTanggaBalita} RT berbalita)`;
 
   // Chart Risiko
   makeChart('chartRisiko','doughnut',
