@@ -705,21 +705,21 @@ function renderDynamic(data) {
       return val.includes('ada,') || val.includes('lainnya');
     }).length, color: '#EF4444' },
   { count: data.filter(r => (r.Q14_Rokok || '').toLowerCase().includes('merokok di dalam')).length, color: '#F59E0B' },
-  { count: belumImun, color: '#F59E0B' },
+  { count: belumImun, color: '#F59E0B', base: totalRumahTanggaBalita },
   { count: data.filter(r => (r.Q16_AirMinum || '').toLowerCase().match(/sungai|sumur gali/)).length, color: '#3B82F6' },
   { count: data.filter(r => (r.Q18_Toilet || '').toLowerCase().match(/tidak ada|lubang/)).length, color: '#3B82F6' },
   { count: data.filter(r => (r.Q23_SakitBerat || '').toLowerCase().startsWith('ya')).length, color: '#E91E8C' },
 ];
   
   document.getElementById('riskGrid').innerHTML=factors.map((f,i)=>{
-    const pv=total>0?((f.count/total)*100).toFixed(1):0;
+    const pv=total>0?((f.count/f.base)*100).toFixed(1):0;
     return `<div class="risk-card">
       <div class="rf-header">
         <div class="rf-label">${L.riskFactors[i]}</div>
         <div class="rf-pct" style="color:${f.color}">${pv}%</div>
       </div>
       <div class="rf-bar-wrap"><div class="rf-bar" style="width:${pv}%;background:${f.color};"></div></div>
-      <div class="rf-count">${L.rfCount(f.count,total)}</div>
+      <div class="rf-count">${L.rfCount(f.count,f.base)}</div>
     </div>`;
   }).join('');
 
