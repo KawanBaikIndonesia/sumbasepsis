@@ -415,8 +415,7 @@ const kronis = data.filter(r => {
 }).length;
   const rokok = data.filter(r => (r.Q14_Rokok || '').toLowerCase().includes('merokok di dalam')).length;
   
-  
-  const kematian = data.filter(r => (r.Q31_AdaKematian || '').toLowerCase().match(/ada|meninggal/)).length;
+  const kematian = data.filter(r => (r.Q31_AdaKematian || '').trim().toLowerCase() === 'ada').length;
   const p = n => total > 0 ? ((n / total) * 100).toFixed(1) + '%' : '0%'
 
   if (lang === 'id') return [
@@ -490,15 +489,16 @@ function countBy(arr, key) {
 // ── SCORE ─────────────────────────────────────────────────
 function hitungSkor(r) {
   let s=0;
-  if((r.Q9_PenyakitKronis||'').toLowerCase().includes('ada')) s+=2;
-  if((r.Q31_AdaKematian||'').toLowerCase().match(/ada|meninggal/)) s+=3;
+  const q9 = (r.Q9_PenyakitKronis||'').toLowerCase();
+  if(q9.includes('ada,') || q9.includes('lainnya')) s+=2;
+  if((r.Q31_AdaKematian||'').trim().toLowerCase() === 'ada') s+=3;
   if((r.Q19_CTPS||'').toLowerCase()==='tidak ada'||(r.Q19_CTPS||'')==='') s+=1;
   if((r.Q6_Imunisasi||'').toLowerCase().match(/belum|sebagian/)) s+=1;
-  if((r.Q16_AirMinum||'').toLowerCase().match(/sungai|sumur gali/)) s+=1;
+  if((r.Q16_AirMinum||'').toLowerCase().match(/sungai|terbuka/)) s+=1;
   if((r.Q23_SakitBerat||'').toLowerCase()==='ya') s+=2;
   if((r.Q34_LamaSebelumCari||'').toLowerCase().match(/3 hari|lebih/)) s+=1;
   if((r.Q18_Toilet||'').toLowerCase().match(/tidak ada|lubang/)) s+=1;
-  if((r.Q14_Rokok||'').toLowerCase().includes('ya')) s+=1;
+  if((r.Q14_Rokok||'').toLowerCase().includes('merokok di dalam')) s+=1;
   return s;
 }
 
@@ -706,7 +706,7 @@ function renderDynamic(data) {
     }).length, color: '#EF4444', base: total },
   { count: data.filter(r => (r.Q14_Rokok || '').toLowerCase().includes('merokok di dalam')).length, color: '#F59E0B', base: total },
   { count: belumImun, color: '#F59E0B', base: totalRumahTanggaBalita },
-  { count: data.filter(r => (r.Q16_AirMinum || '').toLowerCase().match(/sungai|sumur gali/)).length, color: '#3B82F6', base: total },
+  { count: data.filter(r => (r.Q16_AirMinum || '').toLowerCase().match(/sungai|terbuka/)).length, color: '#3B82F6', base: total },
   { count: data.filter(r => (r.Q18_Toilet || '').toLowerCase().match(/tidak ada|lubang/)).length, color: '#3B82F6', base: total },
   { count: data.filter(r => (r.Q23_SakitBerat || '').toLowerCase().startsWith('ya')).length, color: '#E91E8C', base: total },
 ];
