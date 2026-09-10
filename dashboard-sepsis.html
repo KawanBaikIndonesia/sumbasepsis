@@ -703,12 +703,12 @@ function renderDynamic(data) {
   { count: data.filter(r => {
       const val = (r.Q9_PenyakitKronis || '').toLowerCase();
       return val.includes('ada,') || val.includes('lainnya');
-    }).length, color: '#EF4444' },
-  { count: data.filter(r => (r.Q14_Rokok || '').toLowerCase().includes('merokok di dalam')).length, color: '#F59E0B' },
+    }).length, color: '#EF4444', base: total },
+  { count: data.filter(r => (r.Q14_Rokok || '').toLowerCase().includes('merokok di dalam')).length, color: '#F59E0B', base: total },
   { count: belumImun, color: '#F59E0B', base: totalRumahTanggaBalita },
-  { count: data.filter(r => (r.Q16_AirMinum || '').toLowerCase().match(/sungai|sumur gali/)).length, color: '#3B82F6' },
-  { count: data.filter(r => (r.Q18_Toilet || '').toLowerCase().match(/tidak ada|lubang/)).length, color: '#3B82F6' },
-  { count: data.filter(r => (r.Q23_SakitBerat || '').toLowerCase().startsWith('ya')).length, color: '#E91E8C' },
+  { count: data.filter(r => (r.Q16_AirMinum || '').toLowerCase().match(/sungai|sumur gali/)).length, color: '#3B82F6', base: total },
+  { count: data.filter(r => (r.Q18_Toilet || '').toLowerCase().match(/tidak ada|lubang/)).length, color: '#3B82F6', base: total },
+  { count: data.filter(r => (r.Q23_SakitBerat || '').toLowerCase().startsWith('ya')).length, color: '#E91E8C', base: total },
 ];
   
   document.getElementById('riskGrid').innerHTML=factors.map((f,i)=>{
