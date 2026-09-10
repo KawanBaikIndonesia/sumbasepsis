@@ -329,7 +329,9 @@ const T = {
       'Tidak Ada Toilet Layak (Q18)',
       'Pernah Sakit Berat (Q23)',
     ],
-    rfCount: (n, total) => `${n} dari ${total} rumah tangga`,
+    rfCount: (n, total, unit='rumah tangga') => `${n} dari ${total} ${unit}`,
+    rfUnitBalita: 'rumah tangga yang memiliki balita',
+    
     riskLabels: ['Tinggi','Sedang','Rendah'],
     surveysLabel: 'Survei',
     hhLabel: 'Rumah tangga',
@@ -370,7 +372,9 @@ const T = {
       'No Proper Toilet (Q18)',
       'Recent Severe Illness (Q23)',
     ],
-    rfCount: (n, total) => `${n} of ${total} households`,
+    rfCount: (n, total, unit='households') => `${n} of ${total} ${unit}`,
+    rfUnitBalita: 'households with children under 5',
+    
     riskLabels: ['High','Moderate','Low'],
     surveysLabel: 'Surveys',
     hhLabel: 'Households',
@@ -719,7 +723,7 @@ function renderDynamic(data) {
         <div class="rf-pct" style="color:${f.color}">${pv}%</div>
       </div>
       <div class="rf-bar-wrap"><div class="rf-bar" style="width:${pv}%;background:${f.color};"></div></div>
-      <div class="rf-count">${L.rfCount(f.count,f.base)}</div>
+      <div class="rf-count">${L.rfCount(f.count,f.base,i===2?L.rfUnitBalita:undefined)}</div>
     </div>`;
   }).join('');
 
