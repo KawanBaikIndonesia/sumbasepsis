@@ -426,13 +426,13 @@ const kronis = data.filter(r => {
     { tag: 'Risiko Kritis', text: `${p(tinggi)} (${tinggi} dari ${total}) rumah tangga masuk kategori risiko tinggi sepsis dan memerlukan tindak lanjut segera.` },
     { tag: 'Penyakit Kronis', text: `${p(kronis)} responden memiliki anggota keluarga dengan penyakit kronis — faktor yang meningkatkan kerentanan terhadap infeksi berat.` },
     { tag: 'Perilaku Merokok', text: `${p(rokok)} rumah tangga melaporkan kebiasaan merokok di dalam rumah, meningkatkan risiko infeksi saluran napas pada anak.` },
-    { tag: 'Kematian Terkait Infeksi', text: `${kematian} rumah tangga (${p(kematian)}) melaporkan kematian anggota keluarga yang berkaitan dengan penyakit infeksi dalam 12 bulan terakhir.` },
+    { tag: 'Kematian Dalam 12 Bulan', text: `${kematian} rumah tangga (${p(kematian)}) melaporkan kematian anggota keluarga dalam 12 bulan terakhir dikarenakan sakit, infeksi, masalah persalinan, atau sakit pada bayi baru lahir.` },
   ];
   else return [
     { tag: 'Critical Risk', text: `${p(tinggi)} (${tinggi} of ${total}) households fall into the high sepsis risk category and require immediate follow-up intervention.` },
     { tag: 'Chronic Illness Burden', text: `${p(kronis)} of respondents have household members with chronic disease — a key vulnerability factor for severe infection.` },
     { tag: 'Indoor Smoking', text: `${p(rokok)} of households reported indoor smoking practices, significantly increasing children's risk of respiratory infection.` },
-    { tag: 'Infection-Related Deaths', text: `${kematian} households (${p(kematian)}) reported a family member death associated with infection or illness in the past 12 months.` },
+    { tag: 'Death Within 12 Months', text: `${kematian} households (${p(kematian)}) reported the death of a family member in the last 12 months due to illness, infection, birth problems, or newborn illness.` },
   ];
 }
 
@@ -494,8 +494,8 @@ function countBy(arr, key) {
 function hitungSkor(r) {
   let s=0;
   const q9 = (r.Q9_PenyakitKronis||'').toLowerCase();
-  if(q9.includes('ada,') || q9.includes('lainnya')) s+=2;
-  if((r.Q31_AdaKematian||'').trim().toLowerCase() === 'ada') s+=3;
+  if(q9.includes('ada,') || q9.includes('lainnya')) s+=1;
+  if((r.Q31_AdaKematian||'').trim().toLowerCase() === 'ada') s+=1;
   if((r.Q19_CTPS||'').toLowerCase()==='tidak ada'||(r.Q19_CTPS||'')==='') s+=1;
   if((r.Q6_Imunisasi||'').toLowerCase().match(/belum|sebagian/)) s+=1;
   if((r.Q16_AirMinum||'').toLowerCase().match(/sungai|terbuka/)) s+=1;
