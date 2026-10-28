@@ -223,19 +223,19 @@ body{background:var(--gray-50);color:var(--gray-900);font-family:var(--font);fon
       <div class="kpi-val" id="kpiTotal">—</div>
       <div class="kpi-sub" data-id="data masuk" data-en="records collected">data masuk</div>
     </div>
-    <div class="kpi-card red">
+    <div class="kpi-card red" style="display:none;">
       <div class="kpi-icon">🚨</div>
       <div class="kpi-label" data-id="RISIKO TINGGI" data-en="HIGH RISK">RISIKO TINGGI</div>
       <div class="kpi-val" id="kpiTinggi">—</div>
       <div class="kpi-sub" id="kpiTinggiSub">—</div>
     </div>
-    <div class="kpi-card amber">
+    <div class="kpi-card amber" style="display:none;">
       <div class="kpi-icon">⚠️</div>
       <div class="kpi-label" data-id="RISIKO SEDANG" data-en="MODERATE RISK">RISIKO SEDANG</div>
       <div class="kpi-val" id="kpiSedang">—</div>
       <div class="kpi-sub" id="kpiSedangSub">—</div>
     </div>
-    <div class="kpi-card green">
+    <div class="kpi-card green" style="display:none;">
       <div class="kpi-icon">✅</div>
       <div class="kpi-label" data-id="RISIKO RENDAH" data-en="LOW RISK">RISIKO RENDAH</div>
       <div class="kpi-val" id="kpiRendah">—</div>
@@ -258,7 +258,7 @@ body{background:var(--gray-50);color:var(--gray-900);font-family:var(--font);fon
   <!-- DISTRIBUSI -->
   <div class="section-label" data-id="Distribusi & Sebaran" data-en="Distribution & Coverage">Distribusi & Sebaran</div>
   <div class="chart-grid">
-    <div class="chart-card">
+    <div class="chart-card" style="display:none;">
       <div class="chart-title" data-id="Distribusi Kategori Risiko" data-en="Risk Category Distribution">Distribusi Kategori Risiko</div>
       <div class="chart-sub" data-id="proporsi tingkat risiko sepsis per rumah tangga" data-en="proportion of sepsis risk level per household">proporsi tingkat risiko sepsis per rumah tangga</div>
       <div class="chart-wrap"><canvas id="chartRisiko"></canvas></div>
@@ -423,13 +423,13 @@ const kronis = data.filter(r => {
   const p = n => total > 0 ? ((n / total) * 100).toFixed(1) + '%' : '0%'
 
   if (lang === 'id') return [
-    { tag: 'Risiko Kritis', text: `${p(tinggi)} (${tinggi} dari ${total}) rumah tangga masuk kategori risiko tinggi sepsis dan memerlukan tindak lanjut segera.` },
+    // { tag: 'Risiko Kritis', text: `${p(tinggi)} (${tinggi} dari ${total}) rumah tangga masuk kategori risiko tinggi sepsis dan memerlukan tindak lanjut segera.` },
     { tag: 'Penyakit Kronis', text: `${p(kronis)} responden memiliki anggota keluarga dengan penyakit kronis — faktor yang meningkatkan kerentanan terhadap infeksi berat.` },
     { tag: 'Perilaku Merokok', text: `${p(rokok)} rumah tangga melaporkan kebiasaan merokok di dalam rumah, meningkatkan risiko infeksi saluran napas pada anak.` },
     { tag: 'Kematian Dalam 12 Bulan', text: `${kematian} rumah tangga (${p(kematian)}) melaporkan kematian anggota keluarga dalam 12 bulan terakhir dikarenakan sakit, infeksi, masalah persalinan, atau sakit pada bayi baru lahir.` },
   ];
   else return [
-    { tag: 'Critical Risk', text: `${p(tinggi)} (${tinggi} of ${total}) households fall into the high sepsis risk category and require immediate follow-up intervention.` },
+    // { tag: 'Critical Risk', text: `${p(tinggi)} (${tinggi} of ${total}) households fall into the high sepsis risk category and require immediate follow-up intervention.` },
     { tag: 'Chronic Illness Burden', text: `${p(kronis)} of respondents have household members with chronic disease — a key vulnerability factor for severe infection.` },
     { tag: 'Indoor Smoking', text: `${p(rokok)} of households reported indoor smoking practices, significantly increasing children's risk of respiratory infection.` },
     { tag: 'Death Within 12 Months', text: `${kematian} households (${p(kematian)}) reported the death of a family member in the last 12 months due to illness, infection, birth problems, or newborn illness.` },
